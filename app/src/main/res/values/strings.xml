@@ -1,0 +1,74 @@
+<resources>
+    <string name="app_name">FKSTM e-KPI(v3)</string>
+    <string name="title_activity_image_upload">ImageUploadActivity</string>
+    <string name="action_settings">Settings</string>
+    <string-array name="categories">
+        <item>RESEARCH, PUBLICATION and INNOVATION</item>
+        <item>RECOGNITION and PROFESSIONAL SERVICES</item>
+        <item>AWARD</item>
+    </string-array>
+
+    <string-array name="kpiRPI">
+        <item>Consultation</item>
+        <item>Publication</item>
+        <item>Critical Mass (PI)</item>
+        <item>Research Grant</item>
+        <item>Innovation</item>
+    </string-array>
+    <string-array name="kpiRPS">
+        <item>Appointment as Adjunct/Honorary/Visiting Professor, Visiting Fellows, etc</item>
+        <item>Appointment as Chairmanship/ Committee/ Reviewer in professional bodies/ associations/ Editorial Board Member</item>
+        <item>Services rendered by staff</item>
+    </string-array>
+
+    <string-array name="kpiA">
+        <item>Student</item>
+        <item>Staff</item>
+    </string-array>
+
+    <string-array name="measures1_1">
+        <item>Total no. of consultation activity</item>
+    </string-array>
+
+    <string-array name="measures1_2">
+        <item>Total no. of ISI publication Clinical and Science category -ISI only Non-Science Category - ISI/Scopus</item>
+        <item>Total no. of research/reference books</item>
+        <item>Other Publications(chapter in book, scopus, conference proceeding, technical report, policy, newspaper/magazine, newsletter)</item>
+    </string-array>
+
+    <string-array name="measures1_3">
+        <item>Total no. of Academic as Principal Investigator</item>
+    </string-array>
+
+    <string-array name="measures1_4">
+        <item>Public Grants (RU,FRGS,ERGS,LRGS,SF,government agencies, MOSTI etc)</item>
+        <item>Total no. of academic staff apply FRGS /External public grants</item>
+        <item>National Private/Industries</item>
+        <item>International</item>
+    </string-array>
+
+    <string-array name="measures1_5">
+        <item>Total no.of patents filed</item>
+        <item>Total no. of other IPR (Other than patent) eg: trademark, industrial design,circuit,software, lyric, poems, new microbial spesies,new plant variety,utility innovations,geographical indication, layout design,teaching aids,copyrights etc.)</item>
+    </string-array>
+
+    <string-array name="measures2_1">
+        <item>No. of appointment as Adjunct/Honorary/ Visiting Professor, Visiting Fellows, etc</item>
+    </string-array>
+
+    <string-array name="measures2_2">
+        <item>No. of Appointment as Chairmanship/ Committee/ Reviewer in professional bodies/associations/ Editorial Board Member at National level in current year</item>
+    </string-array>
+
+    <string-array name="measures2_3">
+        <item>No. of Appointment as Chairmanship / Committee Member/ Reviewer in professional bodies/associations/ Editorial Board Member International level in current year</item>
+    </string-array>
+
+    <string-array name="measures3_1">
+        <item>No. of Recognition and Award received by student (i.e. certificate of appreciation, trophy, sport achievement, community service, panel of jury, consultation skill, expert panel in mass media, etc.)</item>
+    </string-array>
+
+    <string-array name="measures3_2">
+        <item>No. of External Recognition and Award received by Staff (i.e. certificate of appreciation, trophy, sport achievement, community service, panel of jury, consultation skill, expert panel in mass media)</item>
+    </string-array>
+</resources>
