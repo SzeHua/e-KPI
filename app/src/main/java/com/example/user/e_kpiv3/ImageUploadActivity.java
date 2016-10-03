@@ -98,7 +98,11 @@ public class ImageUploadActivity extends AppCompatActivity {
         bChooseFile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showFileChooser();
+
+            Intent intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
             }
         });
 
@@ -236,12 +240,6 @@ public class ImageUploadActivity extends AppCompatActivity {
         }
     }
 
-    private void showFileChooser() {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
-    }
 
     private void logout() {
         SharedPreferences sharedPreferences = getSharedPreferences(ImageUploadActivity.PREF_NAME, Context.MODE_PRIVATE);
@@ -255,14 +253,15 @@ public class ImageUploadActivity extends AppCompatActivity {
 
     private void cancel(){
 
-        Intent intent = new Intent (ImageUploadActivity.this, EvidenceListActivity.class);
+        Intent intent = new Intent (ImageUploadActivity.this, HomepageActivity.class);
         ImageUploadActivity.this.startActivity(intent);
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        Uri filePath = data.getData();
+        //Uri filePath = data.getData();
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri filePath = data.getData();
             try {
                 //Getting bitmap from Gallery
                 bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), filePath);
@@ -272,11 +271,12 @@ public class ImageUploadActivity extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
+        } else
+        if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
 
             // Image captured and saved to fileUri specified in the Intent
             Toast.makeText(this, "Image saved to:\n" +
-                    filePath, Toast.LENGTH_LONG).show();
+                    data.getData(), Toast.LENGTH_LONG).show();
             bitmap = (Bitmap) data.getExtras().get("data");
             resized = bitmap.createScaledBitmap(bitmap, 1080, 1920, true);
             imageView.setImageBitmap(resized);

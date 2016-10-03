@@ -47,7 +47,6 @@ public class RegisterActivity extends AppCompatActivity {
             alertDialog.setMessage("Your password is not match with your confirm password.");
             alertDialog.setButton("OK", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
-                    // Write your code here to execute after dialog closed
                     Toast.makeText(getApplicationContext(), "You clicked on OK", Toast.LENGTH_SHORT).show();
                 }
             });
@@ -65,7 +64,6 @@ public class RegisterActivity extends AppCompatActivity {
             String email = params[0];
             String staffID = params[1];
             String password = params[2];
-            String confirmPassword = params[3];
             String result = "";
             int line;
             String register_url = "http://192.168.173.1/e-KPI/php/Register.php";
@@ -102,10 +100,6 @@ public class RegisterActivity extends AppCompatActivity {
                 RegisterActivity.this.startActivity(intent);
             } else {
                 Toast.makeText(context, result, Toast.LENGTH_LONG).show();
-                //   Intent intent = new Intent(LoginActivity.this, MyProject.class);
-                //   intent.putExtra("email", email);
-                //  intent.putExtra("password", password);
-                //  LoginActivity.this.startActivity(intent);
 
             }
         }

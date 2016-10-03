@@ -23,21 +23,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".RegisterActivity" />
-        <activity android:name=".ImageUploadActivity" />
-        <activity android:name=".HomepageActivity" />
-        <activity android:name=".ViewEvidenceDetailActivity" />
-        <activity android:name=".EvidenceListActivity" />
-        <activity android:name=".GetSpinner" />
+        <activity android:name=".RegisterActivity"  />
+        <activity android:name=".ImageUploadActivity"  />
+        <activity android:name=".HomepageActivity"  />
+        <activity android:name=".ViewEvidenceDetailActivity"  />
+        <activity android:name=".EvidenceListActivity"  />
+        <activity android:name=".GetSpinner"  />
         <activity android:name=".EditEvidenceActivity" />
         <activity android:name=".CameraActivity" />
-        <!--
- ATTENTION: This was auto-generated to add Google Play services to your project for
-     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
-        -->
-        <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version" />
 
     </application>
 
