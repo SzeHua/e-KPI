@@ -133,7 +133,7 @@ public class ImageUploadActivity extends AppCompatActivity {
 
         bCancel.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                cancel();
+                confirmCancelEvidence();
             }
         });
 
@@ -251,10 +251,30 @@ public class ImageUploadActivity extends AppCompatActivity {
         ImageUploadActivity.this.startActivity(intent);
     }
 
-    private void cancel(){
+    private void confirmCancelEvidence(){
+        android.support.v7.app.AlertDialog.Builder alertDialogBuilder = new android.support.v7.app.AlertDialog.Builder(this);
+        alertDialogBuilder.setMessage("Are you sure you want to cancel this?");
 
-        Intent intent = new Intent (ImageUploadActivity.this, HomepageActivity.class);
-        ImageUploadActivity.this.startActivity(intent);
+        alertDialogBuilder.setPositiveButton("Yes",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+
+                        Intent intent = new Intent (ImageUploadActivity.this, HomepageActivity.class);
+                        ImageUploadActivity.this.startActivity(intent);
+                    }
+                });
+
+        alertDialogBuilder.setNegativeButton("No",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface arg0, int arg1) {
+
+                    }
+                });
+
+        android.support.v7.app.AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -282,7 +302,6 @@ public class ImageUploadActivity extends AppCompatActivity {
             imageView.setImageBitmap(resized);
         }
     }
-
 
     @Override
     protected void onDestroy() {
