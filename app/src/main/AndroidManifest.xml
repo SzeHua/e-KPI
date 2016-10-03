@@ -23,10 +23,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".RegisterActivity"  />
+        <activity android:name=".RegisterActivity" />
         <activity android:name=".ImageUploadActivity"  />
         <activity android:name=".HomepageActivity"  />
-        <activity android:name=".ViewEvidenceDetailActivity"  />
+        <activity android:name=".ViewEvidenceDetailActivity" />
         <activity android:name=".EvidenceListActivity"  />
         <activity android:name=".GetSpinner"  />
         <activity android:name=".EditEvidenceActivity" />

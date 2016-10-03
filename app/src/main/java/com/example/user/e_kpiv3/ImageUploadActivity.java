@@ -303,10 +303,6 @@ public class ImageUploadActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    protected void onDestroy() {
-            //super.onDestroy();
-        }
 
     public void KPISpinner(int selectedIndex) {
         int index = getKPISpinner(selectedIndex);
