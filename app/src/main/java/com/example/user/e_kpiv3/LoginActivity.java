@@ -11,6 +11,14 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -22,11 +30,17 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Hashtable;
+import java.util.Map;
+
 public class LoginActivity extends AppCompatActivity {
     EditText EmailEt, PasswordEt;
     String email, password;
+    String staffID = "";
     private SharedPreferences preferences;
     static final String PREF_NAME = "PrefKey";
+    public static final String KEY_STAFFID = "staffID";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,7 +62,8 @@ public class LoginActivity extends AppCompatActivity {
     public class BackgroundWorker extends AsyncTask<String, Void, String> {
         Context context;
         AlertDialog alertDialog;
-        BackgroundWorker (Context ctx) {
+
+        BackgroundWorker(Context ctx) {
             context = ctx;
         }
 
@@ -57,27 +72,28 @@ public class LoginActivity extends AppCompatActivity {
             String type = params[0];
             String result = "";
             String login_url = "http://192.168.173.1/e-KPI/php/Login.php";
-            if(type.equals("login")){
-                try{
+
+            if (type.equals("login")) {
+                try {
                     String email = params[1];
                     String password = params[2];
                     URL url = new URL(login_url);
-                    HttpURLConnection httpURLConnection = (HttpURLConnection)url.openConnection();
+                    HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
                     httpURLConnection.setRequestMethod("POST");
                     httpURLConnection.setDoOutput(true);
                     httpURLConnection.setDoInput(true);
                     OutputStream outputStream = httpURLConnection.getOutputStream();
                     BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8"));
-                    String post_data = URLEncoder.encode("email","UTF-8")+"="+URLEncoder.encode(email,"UTF-8")+"&"+URLEncoder.encode("password","UTF-8")+"="+URLEncoder.encode(password,"UTF-8");
+                    String post_data = URLEncoder.encode("email", "UTF-8") + "=" + URLEncoder.encode(email, "UTF-8") + "&" + URLEncoder.encode("password", "UTF-8") + "=" + URLEncoder.encode(password, "UTF-8");
                     bufferedWriter.write(post_data);
                     bufferedWriter.flush();
                     bufferedWriter.close();
                     outputStream.close();
                     InputStream inputStream = httpURLConnection.getInputStream();
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream,"iso-8859-1"));
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "iso-8859-1"));
                     //String result="";
                     String line;
-                    while((line = bufferedReader.readLine())!= null) {
+                    while ((line = bufferedReader.readLine()) != null) {
                         result += line;
                     }
                     bufferedReader.close();
@@ -92,35 +108,79 @@ public class LoginActivity extends AppCompatActivity {
             }
             return result;
         }
+
         @Override
         protected void onPreExecute() {
             //alertDialog = new AlertDialog.Builder(context).create();
             //alertDialog.setTitle("Login Status");
             super.onPreExecute();
         }
+
         @Override
         protected void onPostExecute(String result) {
             //alertDialog.setMessage(result);
             //alertDialog.show();
-            if(result.equals("")) {
+            if (result.equals("")) {
                 result = "Login unsuccessful.";
-            }
-            else{
+            } else {
+                staffID = result;
+                getSecondaryPosition();
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.putString("staffid", result);
                 editor.commit();
 
+
                 Intent intent = new Intent(LoginActivity.this, HomepageActivity.class);
                 intent.putExtra("result", result);
-                //intent.putExtra("email", email);
-                //intent.putExtra("password", password);
                 LoginActivity.this.startActivity(intent);
-                //result = "Success";
-                //alertDialog.setMessage(result);
-                //alertDialog.show();
+
             }
             Toast.makeText(context, result, Toast.LENGTH_LONG).show();
         }
+
+        private void getSecondaryPosition()
+            {
+            // Instantiate the RequestQueue.
+            String secondaryPosition_url = "http://192.168.173.1/e-KPI/php/GetSecondaryPosition.php";
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, secondaryPosition_url,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String s) {
+                            if (!(s.equals(""))) {
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putString("secondaryPosition", s);
+                                editor.commit();
+                            } else {
+                                Toast.makeText(LoginActivity.this, s, Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError volleyError) {
+                            //Toast.makeText(LoginActivity.this, s , Toast.LENGTH_LONG).show();
+                        }
+                    }) {
+                @Override
+                protected Map<String, String> getParams() throws AuthFailureError {
+
+                    //Creating parameters
+                    Map<String, String> params = new Hashtable<String, String>();
+
+                    //Adding parameters
+                    params.put(KEY_STAFFID, staffID);
+                    //returning parameters
+                    return params;
+                }
+            };
+
+            //Creating a Request Queue
+            RequestQueue requestQueue = Volley.newRequestQueue(context);
+
+            //Adding request to the queue
+            requestQueue.add(stringRequest);
+        }
+
         @Override
         protected void onProgressUpdate(Void... values) {
             super.onProgressUpdate(values);
