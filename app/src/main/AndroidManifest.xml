@@ -24,14 +24,13 @@
             </intent-filter>
         </activity>
         <activity android:name=".RegisterActivity" />
-        <activity android:name=".ImageUploadActivity"  />
-        <activity android:name=".HomepageActivity"  />
+        <activity android:name=".ImageUploadActivity" />
+        <activity android:name=".HomepageActivity" />
         <activity android:name=".ViewEvidenceDetailActivity" />
-        <activity android:name=".EvidenceListActivity"  />
-        <activity android:name=".GetSpinner"  />
+        <activity android:name=".EvidenceListActivity" />
         <activity android:name=".EditEvidenceActivity" />
         <activity android:name=".CameraActivity" />
-
+        <activity android:name=".GetCategoryActivity" />
     </application>
 
 </manifest>

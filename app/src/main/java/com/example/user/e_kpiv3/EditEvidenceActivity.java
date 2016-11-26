@@ -309,6 +309,7 @@ public class EditEvidenceActivity extends AppCompatActivity {
                                 Toast.makeText(EditEvidenceActivity.this, "Changes have been saved.", Toast.LENGTH_LONG).show();
                                 Intent intent = new Intent (EditEvidenceActivity.this, EvidenceListActivity.class);
                                 EditEvidenceActivity.this.startActivity(intent);
+                                finish();
 
                             } else {
                                 Toast.makeText(EditEvidenceActivity.this, s, Toast.LENGTH_LONG).show();
@@ -378,6 +379,7 @@ public class EditEvidenceActivity extends AppCompatActivity {
 
         Intent intent = new Intent (EditEvidenceActivity.this, EvidenceListActivity.class);
         EditEvidenceActivity.this.startActivity(intent);
+        finish();
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data){

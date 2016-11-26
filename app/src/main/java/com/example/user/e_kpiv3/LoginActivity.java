@@ -37,6 +37,7 @@ public class LoginActivity extends AppCompatActivity {
     EditText EmailEt, PasswordEt;
     String email, password;
     String staffID = "";
+    private int isLecturer = 1;
     private SharedPreferences preferences;
     static final String PREF_NAME = "PrefKey";
     public static final String KEY_STAFFID = "staffID";
@@ -133,13 +134,13 @@ public class LoginActivity extends AppCompatActivity {
                 Intent intent = new Intent(LoginActivity.this, HomepageActivity.class);
                 intent.putExtra("result", result);
                 LoginActivity.this.startActivity(intent);
-
             }
             Toast.makeText(context, result, Toast.LENGTH_LONG).show();
         }
 
         private void getSecondaryPosition()
             {
+
             // Instantiate the RequestQueue.
             String secondaryPosition_url = "http://192.168.173.1/e-KPI/php/GetSecondaryPosition.php";
             StringRequest stringRequest = new StringRequest(Request.Method.POST, secondaryPosition_url,
@@ -147,12 +148,15 @@ public class LoginActivity extends AppCompatActivity {
                         @Override
                         public void onResponse(String s) {
                             if (!(s.equals(""))) {
-                                SharedPreferences.Editor editor = preferences.edit();
-                                editor.putString("secondaryPosition", s);
-                                editor.commit();
+                                isLecturer = 1;
                             } else {
-                                Toast.makeText(LoginActivity.this, s, Toast.LENGTH_LONG).show();
+                                isLecturer = 0;
+                                //Toast.makeText(LoginActivity.this, s, Toast.LENGTH_LONG).show();
                             }
+                            SharedPreferences.Editor editor = preferences.edit();
+                            editor.putString("secondaryPosition", s);
+                            editor.putInt("isLecturer", isLecturer);
+                            editor.commit();
                         }
                     },
                     new Response.ErrorListener() {
