@@ -35,10 +35,10 @@ public class SpinnerDownloader extends AsyncTask<Void, Void, String>{
     protected void onPreExecute(){
         super.onPreExecute();
 
-        pd= new ProgressDialog(c);
+       /* pd= new ProgressDialog(c);
         pd.setTitle("In Progress");
         pd.setMessage("In progress...Please wait");
-        pd.show();
+        pd.show();*/
     }
 
     @Override
@@ -50,7 +50,7 @@ public class SpinnerDownloader extends AsyncTask<Void, Void, String>{
     @Override
     protected void onPostExecute(String s){
         super.onPostExecute(s);
-        pd.dismiss();
+        //pd.dismiss();
 
         if(s==null){
             Toast.makeText(c, "Unable to Retrieve, null Returned", Toast.LENGTH_SHORT).show();
@@ -60,14 +60,20 @@ public class SpinnerDownloader extends AsyncTask<Void, Void, String>{
             //CALL PARSES CLASS TO PARSE
             SharedPreferences preferences = c.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
             int categoryID = preferences.getInt("categoryID", 0);
-            String response;
+            int kpiID = preferences.getInt("kpiID",0);
             if(categoryID == 0) {
                 SpinnerDataParser parser = new SpinnerDataParser(c, sp, s);
                 parser.execute();
             }else
             {
-                SpinnerDataParserKPI parserKPI = new SpinnerDataParserKPI(c,sp,s);
-                parserKPI.execute();
+                if(kpiID == 0) {
+                    SpinnerDataParserKPI parserKPI = new SpinnerDataParserKPI(c, sp, s);
+                    parserKPI.execute();
+                }else
+                {
+                    SpinnerDataParserMeasures parserMeasures = new SpinnerDataParserMeasures(c, sp, s);
+                    parserMeasures.execute();
+                }
             }
         }
     }

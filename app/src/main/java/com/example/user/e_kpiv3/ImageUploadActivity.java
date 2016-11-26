@@ -70,9 +70,11 @@ public class ImageUploadActivity extends AppCompatActivity {
     private String categoryName = "";
     private int categoryID = 0;
     private String kpiName = "";
+    private int kpiID = 0;
     private String measuresName = "";
     private String staffID = "";
     private int isLecturer;
+    private SharedPreferences preferences;
 
     private Bitmap bitmap;
     private Bitmap resized;
@@ -83,9 +85,9 @@ public class ImageUploadActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_upload);
 
-        final SharedPreferences preference = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        staffID = preference.getString("staffid", "0");
-        isLecturer = preference.getInt("isLecturer", 1);
+        preferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        staffID = preferences.getString("staffid", "0");
+        isLecturer = preferences.getInt("isLecturer", 1);
         bChooseFile = (Button) findViewById(R.id.bChooseFile);
         bCamera = (Button) findViewById(R.id.bCamera);
         bUpload = (Button) findViewById(R.id.bUpload);
@@ -98,9 +100,9 @@ public class ImageUploadActivity extends AppCompatActivity {
         sKPI = (Spinner) findViewById(R.id.sKPI);
         sMeasures = (Spinner) findViewById(R.id.sMeasures);
         String URL_CATEGORY = "http://192.168.173.1/e-KPI/php/GetCategory.php?isLecturer="+isLecturer;
-        categoryID = 0;
-        SharedPreferences.Editor editor = preference.edit();
-        editor.putInt("categoryID", categoryID);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("categoryID", 0);
+        editor.putInt("kpiID", 0);
         editor.commit();
 
 
@@ -175,12 +177,9 @@ public class ImageUploadActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parent, View selectedItemView, int position, long id) {
                 categoryName = parent.getItemAtPosition(position).toString();
-                /*int catID = parent.getSelectedItemPosition();
-                categoryID = catID+1;*/
-                /*SpinnerObjCat objCat =new SpinnerObjCat();*/
                 categoryID = position+1;
 
-                SharedPreferences.Editor editor = preference.edit();
+                SharedPreferences.Editor editor = preferences.edit();
                 editor.putInt("categoryID", categoryID);
                 editor.commit();
                 KPISpinner(categoryID);
@@ -362,10 +361,17 @@ public class ImageUploadActivity extends AppCompatActivity {
             }
         });*/
         String URL_KPI = "http://192.168.173.1/e-KPI/php/GetKPI_Spinner.php?categoryID="+categoryID;
+        new SpinnerDownloader(ImageUploadActivity.this, URL_KPI, sKPI).execute();
         sKPI.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View selectedItemView, int position, long id) {
                 kpiName = parent.getItemAtPosition(position).toString();
+                kpiID = position+1;
+
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putInt("kpiID", kpiID);
+                editor.commit();
+                MeasuresSpinner(kpiID);
             }
 
             @Override
@@ -374,7 +380,7 @@ public class ImageUploadActivity extends AppCompatActivity {
             }
         });
 
-        new SpinnerDownloader(ImageUploadActivity.this, URL_KPI, sKPI).execute();
+
     }
 
     private int getKPISpinner(int selectedIndex) {
@@ -396,8 +402,8 @@ public class ImageUploadActivity extends AppCompatActivity {
         return returnIndex;
     }
 
-    public void MeasuresSpinner(int selectedIndex) {
-        int index = getMeasuresSpinner(selectedIndex);
+    public void MeasuresSpinner(int kpiID) {
+        /*int index = getMeasuresSpinner(selectedIndex);
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_dropdown_item,
                 getResources().getStringArray(index));
@@ -408,6 +414,21 @@ public class ImageUploadActivity extends AppCompatActivity {
                 measuresName = parent.getSelectedItem().toString();
                 //Toast.makeText(getBaseContext(), parent.getSelectedItem().toString(),
                 //        Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });*/
+
+        String URL_MEASURES = "http://192.168.173.1/e-KPI/php/GetMeasures_Spinner.php?kpiID="+kpiID;
+        new SpinnerDownloader(ImageUploadActivity.this, URL_MEASURES, sMeasures).execute();
+        sMeasures.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View selectedItemView, int position, long id) {
+                measuresName = parent.getItemAtPosition(position).toString();
+
             }
 
             @Override

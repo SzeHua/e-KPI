@@ -14,37 +14,39 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 /**
- * Created by USER on 11/26/2016.
+ * Created by USER on 11/27/2016.
  */
 
-public class SpinnerDataParserKPI extends AsyncTask<Void, Void, Integer> {
+public class SpinnerDataParserMeasures extends AsyncTask<Void, Void, Integer> {
+
     Context c;
     Spinner sp;
     String jsonData;
     ProgressDialog pd;
-    ArrayList<String> kpi = new ArrayList<>();
+    ArrayList<String> measures = new ArrayList<>();
+
     JSONArray jsonArray;
     JSONObject jsonObject;
 
-    public SpinnerDataParserKPI(Context c, Spinner sp, String jsonData) {
+    public SpinnerDataParserMeasures(Context c, Spinner sp, String jsonData) {
         this.c = c;
         this.sp = sp;
         this.jsonData = jsonData;
     }
 
     @Override
-    protected void onPreExecute(){
+    protected Integer doInBackground(Void... params) {
+        return this.parseData();
+    }
+
+    @Override
+    protected void onPreExecute() {
         super.onPreExecute();
 
         /*pd= new ProgressDialog(c);
         pd.setTitle("In Progress");
         pd.setMessage("In progress...Please wait");
         pd.show();*/
-    }
-
-    @Override
-    protected Integer doInBackground(Void... params) {
-        return this.parseData();
     }
 
     @Override
@@ -61,23 +63,11 @@ public class SpinnerDataParserKPI extends AsyncTask<Void, Void, Integer> {
             //Toast.makeText(c, "Parsed Successfully", Toast.LENGTH_SHORT).show();
 
             //BIND
-            ArrayAdapter adapter = new ArrayAdapter(c, android.R.layout.simple_list_item_1, kpi);
+            ArrayAdapter adapter = new ArrayAdapter(c, android.R.layout.simple_list_item_1, measures);
             sp.setAdapter(adapter);
 
-           /* sp.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                @Override
-                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    //Toast.makeText(c, categories.get(position),Toast.LENGTH_SHORT).show();
-                }
-
-                @Override
-                public void onNothingSelected(AdapterView<?> parent) {
-
-                }
-            });*/
         }
     }
-
 
     private int parseData()
     {
@@ -85,21 +75,21 @@ public class SpinnerDataParserKPI extends AsyncTask<Void, Void, Integer> {
             jsonArray = new JSONArray(jsonData);
             jsonObject = null;
 
-            kpi.clear();
-            SpinnerObjCat cat2 = null;
+            measures.clear();
+            SpinnerObjCat cat3 = null;
 
             for(int i=0; i<jsonArray.length(); i++)
             {
                 jsonObject = jsonArray.getJSONObject(i);
 
-                int kpiID = jsonObject.getInt("kpiID");
-                String kpiName = jsonObject.getString("kpiName");
+                int measuresID = jsonObject.getInt("measuresID");
+                String measuresName = jsonObject.getString("measuresName");
 
-                cat2 = new SpinnerObjCat();
-                cat2.setKpiID(kpiID);
-                cat2.setKpiName(kpiName);
+                cat3 = new SpinnerObjCat();
+                cat3.setMeasuresID(measuresID);
+                cat3.setMeasuresName(measuresName);
 
-                kpi.add(kpiName);
+                measures.add(measuresName);
             }
             return 1;
 
