@@ -5,15 +5,20 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -29,6 +34,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.nbsp.materialfilepicker.MaterialFilePicker;
+import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -37,11 +44,18 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.regex.Pattern;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.RequestBody;
 
 public class ImageUploadActivity extends AppCompatActivity {
     public static final String UPLOAD_URL = "http://192.168.173.1/e-KPI/php/UploadEvidence.php";
 
     public static final String KEY_IMAGE = "image";
+    public static final String KEY_DOCUMENT = "document";
     public static final String KEY_TITLE = "title";
     public static final String KEY_DESCRIPTION = "description";
     public static final String KEY_CATEGORY = "categoryName";
@@ -53,20 +67,20 @@ public class ImageUploadActivity extends AppCompatActivity {
 
     private static final int CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 100;
     private int PICK_IMAGE_REQUEST = 1;
+    private int PICK_DOCUMENT_REQUEST = 10;
 
     private Button bChooseFile;
     private Button bCamera;
     private Button bUpload;
     private Button bLogout;
     private Button bCancel;
+    private Button bDocument;
     private EditText etTitle;
     private EditText etDescription;
     private ImageView imageView;
     private Spinner sCategory;
     private Spinner sKPI;
     private Spinner sMeasures;
-    private int CategoryIndex = 0;
-    private int KPIIndex = 0;
     private String categoryName = "";
     private int categoryID = 0;
     private String kpiName = "";
@@ -79,6 +93,8 @@ public class ImageUploadActivity extends AppCompatActivity {
     private Bitmap bitmap;
     private Bitmap resized;
     private Uri fileUri;
+    private File f;
+    ProgressDialog pd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +109,7 @@ public class ImageUploadActivity extends AppCompatActivity {
         bUpload = (Button) findViewById(R.id.bUpload);
         bLogout = (Button) findViewById(R.id.bLogout);
         bCancel = (Button) findViewById(R.id.bCancel);
+        bDocument = (Button) findViewById(R.id.bDocument);
         etTitle = (EditText) findViewById(R.id.etTitle);
         etDescription = (EditText) findViewById(R.id.etDescription);
         imageView = (ImageView) findViewById(R.id.imageView);
@@ -105,7 +122,32 @@ public class ImageUploadActivity extends AppCompatActivity {
         editor.putInt("kpiID", 0);
         editor.commit();
 
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                requestPermissions(new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE},
+                        100);
+                return;
 
+            }
+        }
+        //enable_button();
+
+        //private void enable_button(){
+            bDocument.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View v) {
+
+                    new MaterialFilePicker()
+                            .withActivity(ImageUploadActivity.this)
+                            .withRequestCode(PICK_DOCUMENT_REQUEST)
+                            .withFilter(Pattern.compile(".*\\.pdf$")) // Filtering files and directories by file name using regexp
+                            //.withFilter(Pattern.compile(".*\\.pptx$")) // Filtering files and directories by file name using regexp
+                            .withFilterDirectories(false) // Set directories filterable (false by default)
+                            .withHiddenFiles(true) // Show hidden files and folders
+                            .start();
+                }
+            });
+        //}
 
         bChooseFile.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -149,29 +191,6 @@ public class ImageUploadActivity extends AppCompatActivity {
             }
         });
 
-        // Creating adapter for spinner
-      /*  ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item,
-                getResources().getStringArray(R.array.categories));*/
-
-        // attaching data adapter to spinner
-
-        //CATEGORY
-        /*sCategory.setAdapter(dataAdapter);
-        sCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                int index = parent.getSelectedItemPosition();
-                categoryName = parent.getSelectedItem().toString();
-                CategoryIndex = index;
-                KPISpinner(index);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-        //sKPI.setAdapter(dataAdapter2);*/
         new SpinnerDownloader(ImageUploadActivity.this, URL_CATEGORY, sCategory).execute();
         sCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -195,8 +214,6 @@ public class ImageUploadActivity extends AppCompatActivity {
 
     }
 
-
-
     //convert bitmap to base64 String
     public String getStringImage(Bitmap bmp) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -209,69 +226,45 @@ public class ImageUploadActivity extends AppCompatActivity {
     private void uploadImage() {
         if (etTitle.getText().toString().equals("") || etDescription.getText().toString().equals("")) {
             Toast.makeText(ImageUploadActivity.this, "Please fill in required fields.", Toast.LENGTH_LONG).show();
-        } else {
-            //Showing the progress dialog
-            final ProgressDialog loading = ProgressDialog.show(this, "Uploading...", "Please wait...", false, false);
-            StringRequest stringRequest = new StringRequest(Request.Method.POST, UPLOAD_URL,
-                    new Response.Listener<String>() {
-                        @Override
-                        public void onResponse(String s) {
-                            //Disimissing the progress dialog
-                            loading.dismiss();
-                            //Showing toast message of the response
-                            if (s.equals("")) {
-                                Toast.makeText(ImageUploadActivity.this, "Successfully uploaded.", Toast.LENGTH_LONG).show();
-                                Intent intent = new Intent(ImageUploadActivity.this, EvidenceListActivity.class);
-                                ImageUploadActivity.this.startActivity(intent);
-                                finish();
-
-                            } else {
-                                Toast.makeText(ImageUploadActivity.this, s, Toast.LENGTH_LONG).show();
-                            }
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError volleyError) {
-                            //Dismissing the progress dialog
-                            loading.dismiss();
-
-                            //Showing toast
-                            Toast.makeText(ImageUploadActivity.this, "Please choose an image.", Toast.LENGTH_LONG).show();
-                        }
-                    }) {
+        } else if (resized != null && f == null){
+            SetInsertData();
+        }else if (resized == null && f != null)
+        {
+            Thread t =new Thread(new Runnable(){
                 @Override
-                protected Map<String, String> getParams() throws AuthFailureError {
-                    //Converting Bitmap to String
-                    String image = getStringImage(resized);
+                public void run() {
 
-                    //Getting details
-                    String title = etTitle.getText().toString();
-                    String description = etDescription.getText().toString();
+                    String content_type = getMimeType(f.getPath());
 
-                    //Creating parameters
-                    Map<String, String> params = new Hashtable<String, String>();
+                    String file_path = f.getAbsolutePath();
+                    OkHttpClient client = new OkHttpClient();
+                    RequestBody file_body = RequestBody.create(MediaType.parse(content_type),f);
 
-                    //Adding parameters
-                    params.put(KEY_TITLE, title);
-                    params.put(KEY_DESCRIPTION, description);
-                    params.put(KEY_CATEGORY, categoryName);
-                    params.put(KEY_KPI, kpiName);
-                    params.put(KEY_MEASURES, measuresName);
-                    params.put(KEY_STAFFID, staffID);
-                    params.put(KEY_IMAGE, image);
+                    RequestBody request_body = new MultipartBody.Builder()
+                            .setType(MultipartBody.FORM)
+                            .addFormDataPart("type", content_type)
+                            .addFormDataPart("uploaded_file", file_path.substring(file_path.lastIndexOf("/")+1), file_body)
+                            .build();
 
-                    //returning parameters
-                    return params;
+                    okhttp3.Request request = new okhttp3.Request.Builder()
+                            .url("http://192.168.173.1/e-KPI/php/UploadFile.php")
+                            .post(request_body)
+                            .build();
+                    try {
+                        okhttp3.Response response = client.newCall(request).execute();
+
+                        if(!response.isSuccessful()){
+                            throw new IOException("Error: "+response);
+                        }
+                        pd.dismiss();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
                 }
-            };
-
-            //Creating a Request Queue
-            RequestQueue requestQueue = Volley.newRequestQueue(this);
-
-            //Adding request to the queue
-            requestQueue.add(stringRequest);
-
+            });
+            t.start();
+            SetInsertData();
         }
     }
 
@@ -313,9 +306,23 @@ public class ImageUploadActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    @Override
+   /* public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        //super.onRequestPermissionsResult(requestCode, permissions, grantResults){
+        if(requestCode == 100 && (grantResults[0] == PackageManager.PERMISSION_GRANTED)){
+            enable_button();
+        }else{
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                requestPermissions(new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE},100);
+            }
+        }
+    }*/
+
+    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         //Uri filePath = data.getData();
+        f = null;
+        resized = null;
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri filePath = data.getData();
             try {
@@ -336,30 +343,21 @@ public class ImageUploadActivity extends AppCompatActivity {
             bitmap = (Bitmap) data.getExtras().get("data");
             resized = bitmap.createScaledBitmap(bitmap, 1080, 1920, true);
             imageView.setImageBitmap(resized);
+        }else
+        if(requestCode == PICK_DOCUMENT_REQUEST && resultCode == RESULT_OK){
+            f = new File(data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH));
         }
     }
 
+    private String getMimeType(String path){
+        path = path.replaceAll("\\s","");
+        String extension = MimeTypeMap.getFileExtensionFromUrl(path);
+
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+    }
 
     public void KPISpinner(int categoryID) {
-       /* int index = getKPISpinner(selectedIndex);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_dropdown_item,
-                getResources().getStringArray(index));
-        sKPI.setAdapter(adapter);
-        sKPI.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                KPIIndex = parent.getSelectedItemPosition();
-                kpiName = parent.getSelectedItem().toString();
-                int childIndex = parent.getSelectedItemPosition();
-                MeasuresSpinner(childIndex);
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });*/
         String URL_KPI = "http://192.168.173.1/e-KPI/php/GetKPI_Spinner.php?categoryID="+categoryID;
         new SpinnerDownloader(ImageUploadActivity.this, URL_KPI, sKPI).execute();
         sKPI.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -380,47 +378,9 @@ public class ImageUploadActivity extends AppCompatActivity {
             }
         });
 
-
-    }
-
-    private int getKPISpinner(int selectedIndex) {
-        int returnIndex = R.array.kpiRPI;
-        switch (selectedIndex) {
-            case 0:
-                returnIndex = R.array.kpiRPI;
-                break;
-            case 1:
-                returnIndex = R.array.kpiRPS;
-                break;
-            case 2:
-                returnIndex = R.array.kpiA;
-                break;
-            default:
-                returnIndex = R.array.kpiRPI;
-                break;
-        }
-        return returnIndex;
     }
 
     public void MeasuresSpinner(int kpiID) {
-        /*int index = getMeasuresSpinner(selectedIndex);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_dropdown_item,
-                getResources().getStringArray(index));
-        sMeasures.setAdapter(adapter);
-        sMeasures.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                measuresName = parent.getSelectedItem().toString();
-                //Toast.makeText(getBaseContext(), parent.getSelectedItem().toString(),
-                //        Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });*/
 
         String URL_MEASURES = "http://192.168.173.1/e-KPI/php/GetMeasures_Spinner.php?kpiID="+kpiID;
         new SpinnerDownloader(ImageUploadActivity.this, URL_MEASURES, sMeasures).execute();
@@ -436,63 +396,6 @@ public class ImageUploadActivity extends AppCompatActivity {
 
             }
         });
-    }
-
-    private int getMeasuresSpinner(int selectedIndex) {
-        int returnIndex = R.array.measures1_1;
-        if (CategoryIndex == 0) //reserach....
-        {
-            switch (selectedIndex) {
-                case 0:
-                    returnIndex = R.array.measures1_1;
-                    break;
-                case 1:
-                    returnIndex = R.array.measures1_2;
-                    break;
-                case 2:
-                    returnIndex = R.array.measures1_3;
-                    break;
-                case 3:
-                    returnIndex = R.array.measures1_4;
-                    break;
-                case 4:
-                    returnIndex = R.array.measures1_5;
-                    break;
-                default:
-                    returnIndex = R.array.measures1_1;
-                    break;
-            }
-        } else if (CategoryIndex == 1) //recognition..
-        {
-            switch (selectedIndex) {
-                case 0:
-                    returnIndex = R.array.measures2_1;
-                    break;
-                case 1:
-                    returnIndex = R.array.measures2_2;
-                    break;
-                case 2:
-                    returnIndex = R.array.measures2_3;
-                    break;
-                default:
-                    returnIndex = R.array.measures2_1;
-                    break;
-            }
-        } else if (CategoryIndex == 2) //award
-        {
-            switch (selectedIndex) {
-                case 0:
-                    returnIndex = R.array.measures3_1;
-                    break;
-                case 1:
-                    returnIndex = R.array.measures3_2;
-                    break;
-                default:
-                    returnIndex = R.array.measures3_1;
-                    break;
-            }
-        }
-        return returnIndex;
     }
 
     /** Create a file Uri for saving an image */
@@ -529,5 +432,79 @@ public class ImageUploadActivity extends AppCompatActivity {
         }
 
         return mediaFile;
+    }
+
+    private void SetInsertData()
+    {
+        final ProgressDialog loading = ProgressDialog.show(this, "Uploading...", "Please wait...", false, false);
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, UPLOAD_URL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String s) {
+                        //Disimissing the progress dialog
+                        loading.dismiss();
+                        //Showing toast message of the response
+                        if (s.equals("")) {
+                            Toast.makeText(ImageUploadActivity.this, "Successfully uploaded.", Toast.LENGTH_LONG).show();
+                            Intent intent = new Intent(ImageUploadActivity.this, EvidenceListActivity.class);
+                            ImageUploadActivity.this.startActivity(intent);
+                            finish();
+
+                        } else {
+                            Toast.makeText(ImageUploadActivity.this, s, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError volleyError) {
+                        //Dismissing the progress dialog
+                        loading.dismiss();
+
+                        //Showing toast
+                        Toast.makeText(ImageUploadActivity.this, "Please choose an image.", Toast.LENGTH_LONG).show();
+                    }
+                })
+                //if(requestCode == PICK_DOCUMENT_REQUEST){
+
+        {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                //Converting Bitmap to String
+                String image = null;//getStringImage(resized);
+                if(resized != null)
+                {image = getStringImage(resized);}
+
+                //Getting details
+                String title = etTitle.getText().toString();
+                String description = etDescription.getText().toString();
+
+                //Creating parameters
+                Map<String, String> params = new Hashtable<String, String>();
+
+                //Adding parameters
+                params.put(KEY_TITLE, title);
+                params.put(KEY_DESCRIPTION, description);
+                params.put(KEY_CATEGORY, categoryName);
+                params.put(KEY_KPI, kpiName);
+                params.put(KEY_MEASURES, measuresName);
+                params.put(KEY_STAFFID, staffID);
+                if(resized != null ) {
+                    params.put(KEY_IMAGE, image);
+                }else if(f != null)
+                {
+                    params.put(KEY_DOCUMENT, f.getPath().substring(f.getPath().lastIndexOf("/")+1));
+                }
+
+                //returning parameters
+                return params;
+            }
+        };
+
+        //Creating a Request Queue
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+        //Adding request to the queue
+        requestQueue.add(stringRequest);
     }
 }

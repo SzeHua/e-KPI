@@ -11,21 +11,10 @@
     android:orientation="vertical"
     tools:context="com.example.user.e_kpiv3.GetCategoryActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Category:"
-        android:id="@+id/tvCategory"
-        android:layout_marginTop="20dp"
-        android:layout_weight="1"/>
 
-    <Spinner
+    <Button
+        android:text="Upload file"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:id="@+id/sCategory"
-        android:layout_below="@+id/tvCategory"
-        android:spinnerMode="dropdown"
-        android:layout_weight="1"/>
-
+        android:layout_height="wrap_content"
+        android:id="@+id/button" />
 </LinearLayout>
