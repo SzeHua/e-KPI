@@ -62,6 +62,7 @@ public class ImageUploadActivity extends AppCompatActivity {
     public static final String KEY_KPI = "kpiName";
     public static final String KEY_MEASURES = "measuresName";
     public static final String KEY_STAFFID = "staffID";
+    public static final String KEY_ROLE_TYPE = "roleType";
     public static final String PREF_NAME = "PrefKey";
     public static final int MEDIA_TYPE_IMAGE = 1;
 
@@ -89,6 +90,7 @@ public class ImageUploadActivity extends AppCompatActivity {
     private String staffID = "";
     private int isLecturer;
     private SharedPreferences preferences;
+    private String roleType = "";
 
     private Bitmap bitmap;
     private Bitmap resized;
@@ -104,6 +106,7 @@ public class ImageUploadActivity extends AppCompatActivity {
         preferences = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         staffID = preferences.getString("staffid", "0");
         isLecturer = preferences.getInt("isLecturer", 1);
+        roleType = preferences.getString("roleType", roleType);
         bChooseFile = (Button) findViewById(R.id.bChooseFile);
         bCamera = (Button) findViewById(R.id.bCamera);
         bUpload = (Button) findViewById(R.id.bUpload);
@@ -346,6 +349,7 @@ public class ImageUploadActivity extends AppCompatActivity {
         }else
         if(requestCode == PICK_DOCUMENT_REQUEST && resultCode == RESULT_OK){
             f = new File(data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH));
+            Toast.makeText(ImageUploadActivity.this, f.getPath()+" is selected.", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -446,7 +450,7 @@ public class ImageUploadActivity extends AppCompatActivity {
                         //Showing toast message of the response
                         if (s.equals("")) {
                             Toast.makeText(ImageUploadActivity.this, "Successfully uploaded.", Toast.LENGTH_LONG).show();
-                            Intent intent = new Intent(ImageUploadActivity.this, EvidenceListActivity.class);
+                            Intent intent = new Intent(ImageUploadActivity.this, ImageUploadActivity.class);
                             ImageUploadActivity.this.startActivity(intent);
                             finish();
 
@@ -483,12 +487,13 @@ public class ImageUploadActivity extends AppCompatActivity {
                 Map<String, String> params = new Hashtable<String, String>();
 
                 //Adding parameters
+                params.put(KEY_STAFFID, staffID);
                 params.put(KEY_TITLE, title);
                 params.put(KEY_DESCRIPTION, description);
                 params.put(KEY_CATEGORY, categoryName);
                 params.put(KEY_KPI, kpiName);
                 params.put(KEY_MEASURES, measuresName);
-                params.put(KEY_STAFFID, staffID);
+                params.put(KEY_ROLE_TYPE, roleType);
                 if(resized != null ) {
                     params.put(KEY_IMAGE, image);
                 }else if(f != null)

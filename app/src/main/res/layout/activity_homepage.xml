@@ -30,6 +30,26 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Switch Role"
+        android:textAllCaps="false"
+        android:id="@+id/bSwitchRole"
+        android:layout_below="@+id/bViewEvidenceList"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Long press the Switch Role button to switch role."
+        android:id="@+id/tvSwitchRole2"
+        android:layout_below="@+id/bSwitchRole"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

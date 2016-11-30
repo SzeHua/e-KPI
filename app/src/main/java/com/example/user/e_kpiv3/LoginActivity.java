@@ -41,6 +41,7 @@ public class LoginActivity extends AppCompatActivity {
     private SharedPreferences preferences;
     static final String PREF_NAME = "PrefKey";
     public static final String KEY_STAFFID = "staffID";
+    private String roleType = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,15 +148,22 @@ public class LoginActivity extends AppCompatActivity {
                     new Response.Listener<String>() {
                         @Override
                         public void onResponse(String s) {
-                            if (!(s.equals(""))) {
-                                isLecturer = 1;
-                            } else {
+                            if (s.contains("Dean") || s.equals("Administrator")) {
                                 isLecturer = 0;
+                                roleType = "Faculty";
+                            } else if (s.equals("Head of Department")){
+                                isLecturer = 0;
+                                roleType = "Departmental";
                                 //Toast.makeText(LoginActivity.this, s, Toast.LENGTH_LONG).show();
+                            } else
+                            {
+                                isLecturer = 1;
+                                roleType = "Individual";
                             }
                             SharedPreferences.Editor editor = preferences.edit();
                             editor.putString("secondaryPosition", s);
                             editor.putInt("isLecturer", isLecturer);
+                            editor.putString("roleType", roleType);
                             editor.commit();
                         }
                     },

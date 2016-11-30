@@ -51,14 +51,14 @@ public class EditEvidenceActivity extends AppCompatActivity {
     public static final String KEY_EVIDENCEID = "evidenceID";
 
     private int PICK_IMAGE_REQUEST = 1;
-    private String categoryName = "";
-    private String kpiName = "";
-    private String measuresName = "";
-    private int CategoryIndex = 0;
-    private int KPIIndex = 0;
     private Spinner sCategory;
     private Spinner sKPI;
     private Spinner sMeasures;
+    private String categoryName = "";
+    private int categoryID = 0;
+    private String kpiName = "";
+    private int kpiID = 0;
+    private String measuresName = "";
     private EditText etTitle;
     private EditText etDescription;
     private Button bChooseFile;
@@ -67,6 +67,7 @@ public class EditEvidenceActivity extends AppCompatActivity {
     private Button bLogout;
     private Button bAction;
     private String staffID = "";
+    private int isLecturer;
     private ImageView imageView;
     private String evidenceID = "";
 
@@ -94,14 +95,11 @@ public class EditEvidenceActivity extends AppCompatActivity {
         preference = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         etTitle.setText(preference.getString("title", ""));
         etDescription.setText(preference.getString("description", ""));
-        //date.setText(preference.getString("date", "0000-00-00"));
-        //sCategory.setText(preference.getString("categoryName", ""));
-        //sKPI.setText(preference.getString("kpiName", ""));
-        //sMeasure.setText(preference.getString("measureName", ""));
-
         staffID = preference.getString("staffid","");
         evidenceID = preference.getString("evidenceid", "");
         getImage(preference.getString("evidenceid", ""));
+        String URL_CATEGORY = "http://192.168.173.1/e-KPI/php/GetCategory.php?isLecturer="+isLecturer;
+
 
         bChooseFile.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,22 +129,17 @@ public class EditEvidenceActivity extends AppCompatActivity {
             }
         });
 
-        {
-        // Creating adapter for spinner
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item,
-                getResources().getStringArray(R.array.categories));
-
-       // attaching data adapter to spinner
-
-        //CATEGORY
-        sCategory.setAdapter(dataAdapter);
+        new SpinnerDownloader(EditEvidenceActivity.this, URL_CATEGORY, sCategory).execute();
         sCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                int index = parent.getSelectedItemPosition();
-                categoryName = parent.getSelectedItem().toString();
-                CategoryIndex = index;
-                KPISpinner(index);
+            public void onItemSelected(AdapterView<?> parent, View selectedItemView, int position, long id) {
+                categoryName = parent.getItemAtPosition(position).toString();
+                categoryID = position+1;
+
+                SharedPreferences.Editor editor = preference.edit();
+                editor.putInt("categoryID", categoryID);
+                editor.commit();
+                KPISpinner(categoryID);
             }
 
             @Override
@@ -154,24 +147,23 @@ public class EditEvidenceActivity extends AppCompatActivity {
 
             }
         });
-        //sKPI.setAdapter(dataAdapter2);
-    }
+
     }
 
-    public void KPISpinner(int selectedIndex)
+    public void KPISpinner(int categoryID)
     {
-        int index = getKPISpinner(selectedIndex);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_dropdown_item,
-                getResources().getStringArray(index));
-        sKPI.setAdapter(adapter);
+        String URL_KPI = "http://192.168.173.1/e-KPI/php/GetKPI_Spinner.php?categoryID="+categoryID;
+        new SpinnerDownloader(EditEvidenceActivity.this, URL_KPI, sKPI).execute();
         sKPI.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                KPIIndex = parent.getSelectedItemPosition();
-                kpiName = parent.getSelectedItem().toString();
-                int childIndex = parent.getSelectedItemPosition();
-                MeasuresSpinner(childIndex);
+            public void onItemSelected(AdapterView<?> parent, View selectedItemView, int position, long id) {
+                kpiName = parent.getItemAtPosition(position).toString();
+                kpiID = position+1;
+
+                SharedPreferences.Editor editor = preference.edit();
+                editor.putInt("kpiID", kpiID);
+                editor.commit();
+                MeasuresSpinner(kpiID);
             }
 
             @Override
@@ -181,36 +173,15 @@ public class EditEvidenceActivity extends AppCompatActivity {
         });
     }
 
-    private int getKPISpinner(int selectedIndex)
+    public void MeasuresSpinner(int kpiID)
     {
-        int returnIndex = R.array.kpiRPI;
-        switch(selectedIndex)
-        {
-            case 0 : returnIndex = R.array.kpiRPI;
-                break;
-            case 1: returnIndex = R.array.kpiRPS;
-                break;
-            case 2: returnIndex = R.array.kpiA;
-                break;
-            default:returnIndex = R.array.kpiRPI;
-                break;
-        }
-        return returnIndex;
-    }
-
-    public void MeasuresSpinner(int selectedIndex)
-    {
-        int index = getMeasuresSpinner(selectedIndex);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_dropdown_item,
-                getResources().getStringArray(index));
-        sMeasures.setAdapter(adapter);
+        String URL_MEASURES = "http://192.168.173.1/e-KPI/php/GetMeasures_Spinner.php?kpiID="+kpiID;
+        new SpinnerDownloader(EditEvidenceActivity.this, URL_MEASURES, sMeasures).execute();
         sMeasures.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                measuresName = parent.getSelectedItem().toString();
-                //Toast.makeText(getBaseContext(), parent.getSelectedItem().toString(),
-                //        Toast.LENGTH_SHORT).show();
+            public void onItemSelected(AdapterView<?> parent, View selectedItemView, int position, long id) {
+                measuresName = parent.getItemAtPosition(position).toString();
+
             }
 
             @Override
@@ -220,67 +191,7 @@ public class EditEvidenceActivity extends AppCompatActivity {
         });
     }
 
-    private int getMeasuresSpinner(int selectedIndex)
-    {
-        int returnIndex = R.array.measures1_1;
-        if(CategoryIndex == 0) //reserach....
-        {
-            switch (selectedIndex) {
-                case 0:
-                    returnIndex = R.array.measures1_1;
-                    break;
-                case 1:
-                    returnIndex = R.array.measures1_2;
-                    break;
-                case 2:
-                    returnIndex = R.array.measures1_3;
-                    break;
-                case 3:
-                    returnIndex = R.array.measures1_4;
-                    break;
-                case 4:
-                    returnIndex = R.array.measures1_5;
-                    break;
-                default:
-                    returnIndex = R.array.measures1_1;
-                    break;
-            }
-        }
-        else if (CategoryIndex == 1) //recognition..
-        {
-            switch(selectedIndex)
-            {
-                case 0:
-                    returnIndex = R.array.measures2_1;
-                    break;
-                case 1:
-                    returnIndex = R.array.measures2_2;
-                    break;
-                case 2:
-                    returnIndex = R.array.measures2_3;
-                    break;
-                default:
-                    returnIndex = R.array.measures2_1;
-                    break;
-            }
-        }
-        else if(CategoryIndex == 2) //award
-        {
-            switch(selectedIndex)
-            {
-                case 0:
-                    returnIndex = R.array.measures3_1;
-                    break;
-                case 1:
-                    returnIndex = R.array.measures3_2;
-                    break;
-                default:
-                    returnIndex = R.array.measures3_1;
-                    break;
-            }
-        }
-        return returnIndex;
-    }
+
     //convert bitmap to base64 String
     public String getStringImage(Bitmap bmp) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
