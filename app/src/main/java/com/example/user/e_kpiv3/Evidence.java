@@ -4,19 +4,20 @@ package com.example.user.e_kpiv3;
  * Created by USER on 5/29/2016.
  */
 public class Evidence {
-    private String evidenceID, title, description, date, categoryname, kpiName, measureName;
+    private String evidenceID, title, description, date, categoryName, kpiName, measureName, roleType;
 
     public Evidence() {
     }
 
-    public Evidence(String evidenceID, String title, String description, String date, String categoryname, String kpiName, String measureName) {
+    public Evidence(String evidenceID, String title, String description, String date, String categoryName, String kpiName, String measureName, String roleType) {
         this.evidenceID = evidenceID;
         this.title = title;
         this.description = description;
         this.date = date;
-        this.categoryname = categoryname;
+        this.categoryName = categoryName;
         this.kpiName = kpiName;
         this.measureName = measureName;
+        this.roleType = roleType;
     }
 
     public String getEvidenceID() {
@@ -51,9 +52,9 @@ public class Evidence {
         this.description = description;
     }
 
-    public String getCategoryname() { return this.categoryname; }
+    public String getCategoryName() { return this.categoryName; }
 
-    public void setCategoryname(String categoryname) { this.categoryname = categoryname; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
 
     public String getKpiName() { return this.kpiName; }
 
@@ -62,6 +63,14 @@ public class Evidence {
     public String getMeasureName() { return this.measureName; }
 
     public void setMeasureName(String measureName) { this.measureName = measureName; }
+
+    public void setRoleType(String roleType) {
+        this.roleType = roleType;
+    }
+
+    public String getRoleType() {
+        return roleType;
+    }
 }
 
 

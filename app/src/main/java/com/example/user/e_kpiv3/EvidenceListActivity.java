@@ -64,9 +64,10 @@ public class EvidenceListActivity extends AppCompatActivity {
                 editor.putString("title", evidence.getTitle());
                 editor.putString("description", evidence.getDescription());
                 editor.putString("date", evidence.getDate());
-                editor.putString("categoryName", evidence.getCategoryname());
+                editor.putString("categoryName", evidence.getCategoryName());
                 editor.putString("kpiName", evidence.getKpiName());
                 editor.putString("measureName", evidence.getMeasureName());
+                editor.putString("roleType", evidence.getRoleType());
                 editor.commit();
 
                 Intent intent = new Intent(EvidenceListActivity.this, ViewEvidenceDetailActivity.class);
@@ -93,7 +94,7 @@ public class EvidenceListActivity extends AppCompatActivity {
     private void prepareMovieData(String row) {
         String[] field = row.split("@");
 
-        Evidence evidence = new Evidence(field[0], field[1], field[2],field[3],field[4],field[5],field[6]);
+        Evidence evidence = new Evidence(field[0], field[1], field[2],field[3],field[4],field[5],field[6],field[7]);
         evidenceList.add(evidence);
 
         mAdapter.notifyDataSetChanged();

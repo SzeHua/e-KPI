@@ -49,6 +49,7 @@ public class EditEvidenceActivity extends AppCompatActivity {
     public static final String KEY_MEASURES = "measuresName";
     public static final String KEY_STAFFID = "staffID";
     public static final String KEY_EVIDENCEID = "evidenceID";
+    public static final String KEY_ROLE_TYPE = "roleType";
 
     private int PICK_IMAGE_REQUEST = 1;
     private Spinner sCategory;
@@ -70,6 +71,7 @@ public class EditEvidenceActivity extends AppCompatActivity {
     private int isLecturer;
     private ImageView imageView;
     private String evidenceID = "";
+    private String roleType = "";
 
     private Bitmap bitmap;
     private Bitmap resized;
@@ -78,7 +80,7 @@ public class EditEvidenceActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_evidence);
-
+        preference = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         etTitle = (EditText) findViewById(R.id.etTitle);
         etDescription = (EditText) findViewById(R.id.etDescription);
         sCategory = (Spinner) findViewById(R.id.sCategory);
@@ -91,13 +93,17 @@ public class EditEvidenceActivity extends AppCompatActivity {
         bSave = (Button) findViewById(R.id.bSave);
         bCancel = (Button) findViewById(R.id.bCancel);
         bAction = (Button) findViewById(R.id.bAction);
-
-        preference = getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        isLecturer = preference.getInt("isLecturer", 1);
         etTitle.setText(preference.getString("title", ""));
         etDescription.setText(preference.getString("description", ""));
         staffID = preference.getString("staffid","");
         evidenceID = preference.getString("evidenceid", "");
+        roleType = preference.getString("roleType", roleType);
         getImage(preference.getString("evidenceid", ""));
+        SharedPreferences.Editor editor = preference.edit();
+        editor.putInt("categoryID", 0);
+        editor.putInt("kpiID", 0);
+        editor.commit();
         String URL_CATEGORY = "http://192.168.173.1/e-KPI/php/GetCategory.php?isLecturer="+isLecturer;
 
 
@@ -250,14 +256,17 @@ public class EditEvidenceActivity extends AppCompatActivity {
                     Map<String, String> params = new Hashtable<String, String>();
 
                     //Adding parameters
+
+                    params.put(KEY_STAFFID, staffID);
                     params.put(KEY_TITLE, title);
                     params.put(KEY_DESCRIPTION, description);
                     params.put(KEY_CATEGORY, categoryName);
                     params.put(KEY_KPI, kpiName);
                     params.put(KEY_MEASURES, measuresName);
-                    params.put(KEY_STAFFID, staffID);
+                    params.put(KEY_ROLE_TYPE, roleType);
                     params.put(KEY_IMAGE, image);
                     params.put(KEY_EVIDENCEID, evidenceID);
+
                     //returning parameters
                     return params;
                 }

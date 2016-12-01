@@ -269,6 +269,9 @@ public class ImageUploadActivity extends AppCompatActivity {
             t.start();
             SetInsertData();
         }
+        else if (resized == null && f == null){
+            Toast.makeText(ImageUploadActivity.this, "Please choose an image.", Toast.LENGTH_LONG).show();
+        }
     }
 
 
