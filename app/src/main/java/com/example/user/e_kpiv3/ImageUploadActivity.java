@@ -34,6 +34,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
 import com.nbsp.materialfilepicker.MaterialFilePicker;
 import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 
@@ -41,6 +42,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
@@ -87,6 +89,7 @@ public class ImageUploadActivity extends AppCompatActivity {
     private String kpiName = "";
     private int kpiID = 0;
     private String measuresName = "";
+    private int measuresID = 0;
     private String staffID = "";
     private int isLecturer;
     private SharedPreferences preferences;
@@ -97,6 +100,12 @@ public class ImageUploadActivity extends AppCompatActivity {
     private Uri fileUri;
     private File f;
     ProgressDialog pd;
+    private SpinnerDownloader categoryDownloader;
+    private ArrayList<SpinnerObjCat> CategoryList = new ArrayList<SpinnerObjCat>();
+    private SpinnerDownloader kpiDownloader;
+    private ArrayList<SpinnerObjCat> kpiList = new ArrayList<SpinnerObjCat>();
+    private SpinnerDownloader measuresDownloader;
+    private ArrayList<SpinnerObjCat> measuresList = new ArrayList<SpinnerObjCat>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -194,12 +203,20 @@ public class ImageUploadActivity extends AppCompatActivity {
             }
         });
 
-        new SpinnerDownloader(ImageUploadActivity.this, URL_CATEGORY, sCategory).execute();
+        categoryDownloader = new SpinnerDownloader(ImageUploadActivity.this, URL_CATEGORY, sCategory);
+        categoryDownloader.execute();
+        this.CategoryList = categoryDownloader.CategoryList;
         sCategory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View selectedItemView, int position, long id) {
+
                 categoryName = parent.getItemAtPosition(position).toString();
-                categoryID = position+1;
+                for(int i=0; i<CategoryList.size(); i++)
+                {
+                    if(CategoryList.get(i).getCategoryName().equals(categoryName)) {
+                        categoryID = CategoryList.get(i).getCategoryID();
+                    }
+                }
 
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.putInt("categoryID", categoryID);
@@ -344,10 +361,10 @@ public class ImageUploadActivity extends AppCompatActivity {
         if (requestCode == CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK) {
 
             // Image captured and saved to fileUri specified in the Intent
-            Toast.makeText(this, "Image saved to:\n" +
-                    data.getData(), Toast.LENGTH_LONG).show();
+            //Toast.makeText(this, "Image saved to:\n" +
+                    //data.getData(), Toast.LENGTH_LONG).show();
             bitmap = (Bitmap) data.getExtras().get("data");
-            resized = bitmap.createScaledBitmap(bitmap, 1080, 1920, true);
+            resized = bitmap.createScaledBitmap(bitmap, 600, 600, true);
             imageView.setImageBitmap(resized);
         }else
         if(requestCode == PICK_DOCUMENT_REQUEST && resultCode == RESULT_OK){
@@ -366,12 +383,19 @@ public class ImageUploadActivity extends AppCompatActivity {
     public void KPISpinner(int categoryID) {
 
         String URL_KPI = "http://192.168.173.1/e-KPI/php/GetKPI_Spinner.php?categoryID="+categoryID;
-        new SpinnerDownloader(ImageUploadActivity.this, URL_KPI, sKPI).execute();
+        kpiDownloader = new SpinnerDownloader(ImageUploadActivity.this, URL_KPI, sKPI);
+        kpiDownloader.execute();
+        this.kpiList = kpiDownloader.kpiList;
         sKPI.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View selectedItemView, int position, long id) {
                 kpiName = parent.getItemAtPosition(position).toString();
-                kpiID = position+1;
+                for(int i=0; i<kpiList.size(); i++)
+                {
+                    if(kpiList.get(i).getKpiName().equals(kpiName)) {
+                        kpiID = kpiList.get(i).getKpiID();
+                    }
+                }
 
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.putInt("kpiID", kpiID);
@@ -390,12 +414,19 @@ public class ImageUploadActivity extends AppCompatActivity {
     public void MeasuresSpinner(int kpiID) {
 
         String URL_MEASURES = "http://192.168.173.1/e-KPI/php/GetMeasures_Spinner.php?kpiID="+kpiID;
-        new SpinnerDownloader(ImageUploadActivity.this, URL_MEASURES, sMeasures).execute();
+        measuresDownloader = new SpinnerDownloader(ImageUploadActivity.this, URL_MEASURES, sMeasures);
+        measuresDownloader.execute();
+        this.measuresList = measuresDownloader.measuresList;
         sMeasures.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View selectedItemView, int position, long id) {
                 measuresName = parent.getItemAtPosition(position).toString();
-
+                for(int i=0; i<measuresList.size(); i++)
+                {
+                    if(measuresList.get(i).getMeasuresName().equals(measuresName)) {
+                        measuresID = measuresList.get(i).getMeasuresID();
+                    }
+                }
             }
 
             @Override
@@ -422,7 +453,7 @@ public class ImageUploadActivity extends AppCompatActivity {
 
         // Create the storage directory if it does not exist
         if (! mediaStorageDir.exists()){
-            if (! mediaStorageDir.mkdirs()){
+            if (!mediaStorageDir.mkdirs()) {
                 Log.d("eKPI", "failed to create directory");
                 return null;
             }
@@ -485,6 +516,10 @@ public class ImageUploadActivity extends AppCompatActivity {
                 //Getting details
                 String title = etTitle.getText().toString();
                 String description = etDescription.getText().toString();
+
+                String categoryName = Integer.toString(categoryID);
+                String kpiName = Integer.toString(kpiID);
+                String measuresName = Integer.toString(measuresID);
 
                 //Creating parameters
                 Map<String, String> params = new Hashtable<String, String>();

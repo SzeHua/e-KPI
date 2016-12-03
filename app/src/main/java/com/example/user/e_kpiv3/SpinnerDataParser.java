@@ -2,16 +2,21 @@ package com.example.user.e_kpiv3;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import com.google.gson.Gson;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+
+import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by USER on 11/23/2016.
@@ -27,6 +32,8 @@ public class SpinnerDataParser extends AsyncTask<Void, Void, Integer>{
     ArrayList<String> kpi = new ArrayList<>();
     JSONArray jsonArray;
     JSONObject jsonObject;
+    public static final String PREF_NAME = "PrefKey";
+
 
     public SpinnerDataParser(Context c, Spinner sp, String jsonData) {
         this.c = c;
@@ -52,7 +59,6 @@ public class SpinnerDataParser extends AsyncTask<Void, Void, Integer>{
     @Override
     protected void onPostExecute(Integer result) {
         super.onPostExecute(result);
-
         //pd.dismiss();
 
         if(result == 0)
@@ -84,12 +90,8 @@ public class SpinnerDataParser extends AsyncTask<Void, Void, Integer>{
 
                 int categoryID = jsonObject.getInt("categoryID");
                 String categoryName = jsonObject.getString("categoryName");
-
-                cat = new SpinnerObjCat();
-                cat.setCategoryID(categoryID);
-                cat.setCategoryName(categoryName);
-
                 categories.add(categoryName);
+
             }
             return 1;
 
@@ -105,28 +107,23 @@ public class SpinnerDataParser extends AsyncTask<Void, Void, Integer>{
             jsonArray = new JSONArray(jsonData);
             jsonObject = null;
 
-            kpi.clear();
-            SpinnerObjCat cat2 = null;
+            categories.clear();
+            SpinnerObjCat cat = null;
 
             for(int i=0; i<jsonArray.length(); i++)
             {
                 jsonObject = jsonArray.getJSONObject(i);
 
-                int kpiID = jsonObject.getInt("kpiID");
-                String kpiName = jsonObject.getString("kpiName");
+                int categoryID = jsonObject.getInt("categoryID");
+                String categoryName = jsonObject.getString("categoryName");
 
-                cat2 = new SpinnerObjCat();
-                cat2.setKpiID(kpiID);
-                cat2.setKpiName(kpiName);
-
-                kpi.add(kpiName);
+                categories.add(categoryName);
             }
             return 1;
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
         return 0;
     }
 }

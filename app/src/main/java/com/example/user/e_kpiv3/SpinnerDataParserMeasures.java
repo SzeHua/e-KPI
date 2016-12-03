@@ -84,11 +84,6 @@ public class SpinnerDataParserMeasures extends AsyncTask<Void, Void, Integer> {
 
                 int measuresID = jsonObject.getInt("measuresID");
                 String measuresName = jsonObject.getString("measuresName");
-
-                cat3 = new SpinnerObjCat();
-                cat3.setMeasuresID(measuresID);
-                cat3.setMeasuresName(measuresName);
-
                 measures.add(measuresName);
             }
             return 1;

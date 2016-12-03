@@ -94,11 +94,6 @@ public class SpinnerDataParserKPI extends AsyncTask<Void, Void, Integer> {
 
                 int kpiID = jsonObject.getInt("kpiID");
                 String kpiName = jsonObject.getString("kpiName");
-
-                cat2 = new SpinnerObjCat();
-                cat2.setKpiID(kpiID);
-                cat2.setKpiName(kpiName);
-
                 kpi.add(kpiName);
             }
             return 1;
